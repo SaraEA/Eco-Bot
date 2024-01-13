@@ -1,0 +1,83 @@
+import discord
+from discord.ext import commands
+import random
+import os 
+import requests
+from urllib import parse, request
+import re
+
+description = '''An example bot to showcase the discord.ext.commands extension
+module.
+
+There are a number of utility commands being showcased here.'''
+
+intents = discord.Intents.default()
+intents.members = True
+intents.message_content = True
+
+bot = commands.Bot(command_prefix='E', description=description, intents=intents)
+
+@bot.event
+async def on_ready():
+    print(f'Logged in as {bot.user} (ID: {bot.user.id})')
+    print('------')
+
+
+@bot.command()
+async def add(ctx, left: int, right: int):
+    """Adds two numbers together."""
+    await ctx.send(left + right)
+
+
+@bot.command()
+async def roll(ctx, dice: str):
+    """Rolls a dice in NdN format."""
+    try:
+        rolls, limit = map(int, dice.split('d'))
+    except Exception:
+        await ctx.send('Format has to be in NdN!')
+        return
+
+    result = ', '.join(str(random.randint(1, limit)) for r in range(rolls))
+    await ctx.send(result)
+
+
+@bot.command(description='For when you wanna settle the score some other way')
+async def choose(ctx, *choices: str):
+    """Chooses between multiple choices."""
+    await ctx.send(random.choice(choices))
+
+
+@bot.command()
+async def repeat(ctx, times: int, content='repeating...'):
+    """Repeats a message multiple times."""
+    for i in range(times):
+        await ctx.send(content)
+
+@bot.command()
+async def youtube(ctx, *, search):
+   query_string = parse.urlencode({'search_query': search})
+   html_content = request.urlopen('http://www.youtube.com/results?'+ query_string)
+   search_results = re.findall('watch\?v=(.{11})',html_content.read().decode('utf-8'))
+   print(search_results)
+   await ctx.send('https://www.youtube.com/watch?v=' + random.choice(search_results))
+
+
+
+@bot.command()
+async def consciencia(ctx):
+    await ctx.send("""La basura tecnológica son los residuos que se producen por la eliminación de los equipos que funcionan con electricidad. Estos residuos contienen sustancias tóxicas y metales pesados, como por ejemplo el plomo, que pueden contaminar el suelo, el agua y los alimentos. La acumulación de basura tecnológica supone un daño significativo en los ecosistemas. Estos elementos tóxicos contaminan ríos, lagos y mares, y emiten gases a la atmósfera que provocan desequilibrios en los ecosistemas.""")
+    images = random.choice(os.listdir('medioambiente'))
+    with open(f'medioambiente/{images}', "rb") as f:
+        picture = discord.File(f)
+    await ctx.send(file=picture)
+
+@bot.command()
+async def meme(ctx):
+    img_name = random.choice(os.listdir('memeseco'))
+    with open(f'memeseco/{img_name}', 'rb') as f: 
+        picture = discord.File(f)
+    await ctx.send(file=picture)
+
+
+bot.run('TU TOKEN AQUI')
